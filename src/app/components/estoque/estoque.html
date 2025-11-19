@@ -1,0 +1,209 @@
+<!-- Alerta -->
+@if (alertaMensagem) {
+<div class="alert alert-dismissible text-center fade show" [ngClass]="['alert-' + tipoAlerta]" role="alert">
+  {{ alertaMensagem }}
+  <button type="button" class="btn-close" aria-label="Close" (click)="alertaMensagem = null"></button>
+</div>
+}
+
+<!-- Modal de edição de produto -->
+<div class="modal fade" id="modalEditarProduto" tabindex="-1" aria-labelledby="modalEditarProdutoLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg border-0">
+
+      <!-- Cabeçalho -->
+      <div class="modal-header bg-warning text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="modalEditarProdutoLabel">
+          <i class="bi bi-pencil-square me-2"></i>Editar Produto
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <!-- Corpo -->
+      <div class="modal-body">
+        <form #formEditar="ngForm">
+          <div class="mb-3">
+            <label for="categoriaEditar" class="form-label fw-semibold">Categoria</label>
+            <select id="categoriaEditar" class="form-select" [ngModel]="produtoSelecionado?.categoria"
+              (ngModelChange)="produtoSelecionado && (produtoSelecionado.categoria = $event)" name="categoria">
+              @for (cat of categorias; track $index) {
+              <option [value]="cat.value" [selected]="produtoSelecionado?.categoria === cat.value">
+                {{ cat.label }}
+              </option>
+              }
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="detalheEditar" class="form-label fw-semibold">Detalhe</label>
+            <input type="text" id="detalheEditar" class="form-control" [ngModel]="produtoSelecionado?.detalhe"
+              (ngModelChange)="produtoSelecionado && (produtoSelecionado.detalhe = $event)" name="detalhe" />
+          </div>
+
+          <div class="mb-3">
+            <label for="marcaEditar" class="form-label fw-semibold">Marca</label>
+            <input type="text" id="marcaEditar" class="form-control" [ngModel]="produtoSelecionado?.marca"
+              (ngModelChange)="produtoSelecionado && (produtoSelecionado.marca = $event)" name="marca" />
+          </div>
+
+          <div class="mb-3">
+            <label for="precoCompraEditar" class="form-label fw-semibold">Valor de aquisição (R$)</label>
+            <input type="number" id="precoCompraEditar" class="form-control" [ngModel]="produtoSelecionado?.precoCompra"
+              (ngModelChange)="produtoSelecionado && (produtoSelecionado.precoCompra = $event)" name="precoCompra"
+              step="0.01" />
+          </div>
+
+          <div class="mb-3">
+            <label for="precoVendaEditar" class="form-label fw-semibold">Valor de venda (R$)</label>
+            <input type="number" id="precoVendaEditar" class="form-control"
+              [ngModel]="produtoSelecionado?.precoVenda"
+              (ngModelChange)="produtoSelecionado && (produtoSelecionado.precoVenda = $event)" name="precoVenda"
+              step="0.01" />
+          </div>
+
+          <div class="mb-3">
+            <label for="quantidadeEditar" class="form-label fw-semibold">Quantidade em estoque</label>
+            <input type="number" id="quantidadeEditar" class="form-control"
+              [ngModel]="produtoSelecionado?.quantidadeEstoque"
+              (ngModelChange)="produtoSelecionado && (produtoSelecionado.quantidadeEstoque = $event)"
+              name="quantidadeEstoque" />
+          </div>
+
+          <div class="mb-3">
+            <label for="vencimentoEditar" class="form-label fw-semibold">Vencimento</label>
+            <input type="date" id="vencimentoEditar" class="form-control" [ngModel]="produtoSelecionado?.vencimento"
+              (ngModelChange)="produtoSelecionado && (produtoSelecionado.vencimento = $event)" name="vencimento" />
+          </div>
+        </form>
+      </div>
+
+      <!-- Rodapé -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-warning text-white" data-bs-toggle="modal"
+          data-bs-target="#modalEditarProduto" (click)="salvarEdicao()">
+          <i class="bi bi-save me-1"></i>Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg border-0">
+
+      <!-- Cabeçalho -->
+      <div class="modal-header bg-danger text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="confirmDeleteModalLabel">
+          <i class="bi bi-exclamation-triangle me-2"></i>Confirmar exclusão
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <!-- Corpo -->
+      <div class="modal-body text-center">
+        Tem certeza que deseja excluir <strong>{{ produtoSelecionado?.detalhe }}</strong>?
+      </div>
+
+      <!-- Rodapé -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Não</button>
+        <button type="button" class="btn btn-danger" (click)="confirmarExcluir()" data-bs-dismiss="modal">Sim</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Header + Ações -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="flex-grow-1 text-center">
+    <h2 class="m-0 fw-bold">TEMPERO DO SERTÃO</h2>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAdicionarProduto">
+      <i class="bi bi-plus-circle me-1"></i> Adicionar
+    </button>
+
+    <button class="btn btn-warning text-white" data-bs-toggle="modal" data-bs-target="#modalEditarProduto"
+      [disabled]="!produtoSelecionado">
+      <i class="bi bi-pencil-square me-1"></i> Editar
+    </button>
+
+    <button class="btn btn-danger" [disabled]="!produtoSelecionado" data-bs-toggle="modal"
+      data-bs-target="#confirmDeleteModal">
+      <i class="bi bi-trash me-1"></i> Remover
+    </button>
+  </div>
+</div>
+
+<!-- Filtro + Pesquisa -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="w-25">
+    <select class="form-select shadow-sm" (change)="onCategoriaChange($event)">
+      @for (cat of categorias; track $index) {
+      <option [value]="cat.value">{{ cat.label }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="flex-grow-1 ms-3">
+    <input type="text" class="form-control shadow-sm search-input" placeholder="Pesquisar produto..."
+      (input)="onPesquisaChange($event)">
+  </div>
+</div>
+
+<!-- Tabela -->
+<div class="card shadow-sm border-0 rounded-3 mb-4">
+  <div class="card-body p-0">
+    @defer (when produtosFiltrados.length > 0) {
+    <table class="table table-hover table-borderless align-middle mb-0">
+      <thead class="table-secondary fw-semibold text-center">
+        <tr>
+          <th>Categoria</th>
+          <th>Detalhe</th>
+          <th>Marca</th>
+          <th>Valor de aquisição(R$)</th>
+          <th>Valor de Venda(R$)</th>
+          <th>Qtd. Estoque</th>
+          <th>Vencimento</th>
+        </tr>
+      </thead>
+
+      <tbody class="text-center">
+        @for (prod of produtosFiltrados; track prod.id) {
+        <tr (click)="selecionarProduto(prod)" [class.table-active]="produtoSelecionado?.id === prod.id">
+          <td>{{ prod.categoria }}</td>
+          <td>{{ prod.detalhe }}</td>
+          <td>{{ prod.marca }}</td>
+          <td>R$ {{ prod.precoCompra | number:'1.2-2' }}</td>
+          <td>R$ {{ prod.precoVenda | number:'1.2-2' }}</td>
+          <td>{{ prod.quantidadeEstoque }} un</td>
+          <td>{{ prod.vencimento | date:'dd/MM/yyyy' }}</td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="7" class="text-muted py-4">Nenhum produto encontrado</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    } @placeholder {
+    <div class="text-center py-5">
+      <div class="mt-2 text-muted fw-semibold">Nenhum produto encontrado</div>
+    </div>
+    }
+  </div>
+</div>
+
+<!-- Botão Vender -->
+<div class="text-end">
+  <button class="btn btn-success btn-lg px-4 shadow-sm btn-zoom" data-bs-toggle="modal" data-bs-target="#modalVenda">
+    <i class="bi bi-cart-check me-1"></i> Vender
+  </button>
+</div>

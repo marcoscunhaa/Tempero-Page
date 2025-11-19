@@ -1,0 +1,77 @@
+<div class="modal fade" id="modalVenda" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg border-0">
+
+      <!-- Cabeçalho -->
+      <div class="modal-header bg-success text-white rounded-top-4">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-cart-plus me-2"></i>Registrar Venda
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Corpo -->
+      <div class="modal-body" [formGroup]="formVenda">
+
+        <!-- Pesquisa -->
+        <input type="text" class="form-control mb-3" placeholder="Pesquisar..." (input)="filtrar($event)">
+
+        <!-- Tabela -->
+        <table class="table table-sm text-center">
+          <thead class="table-light">
+            <tr>
+              <th>Selecionar</th>
+              <th>Produto</th>
+              <th>Marca</th>
+              <th>Preço Unit.</th>
+              <th>Quantidade</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let produtoFG of produtosFormArray.controls; let i = index" [formGroup]="produtoFG">
+              <td>
+                <input type="checkbox" formControlName="selecionado" (change)="atualizarTotal()">
+              </td>
+
+              <td>{{ produtoFG.value.detalhe }}</td>
+              <td>{{ produtoFG.value.marca }}</td>
+              <td>R$ {{ produtoFG.value.precoVenda | number:'1.2-2' }}</td>
+
+              <td>
+                <input type="number" class="form-control form-control-sm w-50 mx-auto" formControlName="quantidadeVenda"
+                  min="1" (input)="atualizarTotal()" [disabled]="!produtoFG.value.selecionado">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Forma de pagamento -->
+        <select class="form-select mb-3" formControlName="formaPagamento">
+          <option value="dinheiro">Dinheiro</option>
+          <option value="pix">Pix</option>
+          <option value="debito">Cartão de Débito</option>
+          <option value="credito">Cartão de Crédito</option>
+        </select>
+
+        <!-- Total -->
+        <div class="alert alert-info d-flex justify-content-between">
+          <span>Total:</span>
+          <span class="fw-bold fs-5">R$ {{ total | number:'1.2-2' }}</span>
+        </div>
+
+      </div>
+
+      <!-- Rodapé -->
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+
+        <!-- Corrigido: NÃO REABRE O MODAL -->
+        <button class="btn btn-success" (click)="finalizarVenda()" data-bs-toggle="modal" data-bs-target="#modalVenda">
+          <i class="bi bi-check-circle me-1"></i>Finalizar Venda
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

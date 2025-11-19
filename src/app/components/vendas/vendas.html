@@ -1,0 +1,115 @@
+<!-- Card de Vendas e Lucros -->
+<div class="card shadow-lg rounded-4 p-4 mt-4">
+
+  <!-- Cabeçalho -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="m-0 fw-bold text-success">
+      <i class="bi bi-bar-chart-line me-2"></i>Resumo de Vendas
+    </h3>
+
+    <span class="badge bg-success fs-6 px-3 py-2 shadow-sm">
+     Atualizado: {{ dataAtualizacao }}
+    </span>
+  </div>
+
+  <!-- Indicadores de Resumo -->
+  <div class="row text-center mb-4">
+    <div class="col-md-3 mb-2">
+      <div class="card shadow-sm border-0 rounded-3 p-3">
+        <div class="text-muted fw-semibold">Total Vendido</div>
+        <div class="fs-5 fw-bold text-success">{{ formatarMoeda(resumo.totalVendido) }}</div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card shadow-sm border-0 rounded-3 p-3">
+        <div class="text-muted fw-semibold">Total Comprado</div>
+        <div class="fs-5 fw-bold text-danger">{{ formatarMoeda(resumo.totalComprado) }}</div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card shadow-sm border-0 rounded-3 p-3">
+        <div class="text-muted fw-semibold">Lucro Bruto</div>
+        <div class="fs-5 fw-bold text-primary">{{ formatarMoeda(resumo.lucroBruto) }}</div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-2">
+      <div class="card shadow-sm border-0 rounded-3 p-3">
+        <div class="text-muted fw-semibold">Margem de Lucro</div>
+        <div class="fs-5 fw-bold text-warning">{{ resumo.margemLucro | number:'1.1-2' }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela de Vendas -->
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+      <span class="fw-semibold">
+        <i class="bi bi-clipboard-data me-2"></i>Vendas
+      </span>
+
+      <!-- Filtros -->
+      <div class="d-flex gap-2">
+        <select class="form-select w-auto bg-light border-0 shadow-sm fw-semibold" [(ngModel)]="filtroTempo"
+          (change)="filtrarVendas()">
+          <option value="diario">Vendas Diárias</option>
+          <option value="semanal">Vendas Semanais</option>
+          <option value="mensal">Vendas Mensais</option>
+        </select>
+
+        <select class="form-select w-auto bg-light border-0 shadow-sm fw-semibold" [(ngModel)]="categoriaSelecionada"
+          (change)="filtrarVendas()">
+          @for (cat of categorias; track $index) {
+          <option value="{{ cat }}">{{ cat | titlecase }}</option>
+          }
+        </select>
+      </div>
+
+    </div>
+
+    <div class="card-body p-0">
+
+      @defer (when vendasFiltradas.length > 0) {
+      <table class="table table-hover align-middle mb-0 text-center">
+        <thead class="table-light fw-bold">
+          <tr>
+            <th>Data da Venda</th>
+            <th>Categoria</th>
+            <th>Produto</th>
+            <th>Marca</th>
+            <th>Valor de Venda(R$)</th>
+            <th>Quantidade</th>
+            <th>Forma de Pagamento</th>
+            <th>Lucro(R$)</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (venda of vendasFiltradas; track venda.id) {
+          <tr>
+            <td>{{ venda.dataVenda | date:'dd/MM/yyyy' }}</td>
+            <td>{{ venda.categoria | titlecase }}</td>
+            <td>{{ venda.produto }}</td>
+            <td>{{ venda.marca }}</td>
+            <td>{{ formatarMoeda(venda.precoVenda) }}</td>
+            <td>{{ venda.quantidadeVendida }}</td>
+            <td>{{ venda.formaPagamento }}</td>
+            <td class="text-success fw-bold">{{ formatarLucro(venda) }}</td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="8" class="py-4 text-muted">Nenhuma venda encontrada.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      } @placeholder {
+      <div class="text-center py-5">
+        <div class="mt-2 text-muted fw-semibold">Nenhuma venda encontrada.</div>
+      </div>
+      }
+
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,81 @@
+<div class="modal fade" id="modalAdicionarProduto" tabindex="-1" aria-labelledby="modalAdicionarProdutoLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg border-0">
+
+      <!-- Cabeçalho -->
+      <div class="modal-header bg-primary text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="modalAdicionarProdutoLabel">
+          <i class="bi bi-plus-circle me-2"></i>Adicionar Produto ao Estoque
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <!-- Corpo -->
+      <div class="modal-body">
+        <form [formGroup]="produtoForm">
+
+          <div class="mb-3">
+            <label for="categoriaProduto" class="form-label fw-semibold">Categoria</label>
+            <select id="categoriaProduto" class="form-select" formControlName="categoria">
+              <option value="" disabled selected>Selecione a categoria</option>
+              <option *ngFor="let cat of ['Carnes', 'Temperos', 'Bebidas', 'Frios', 'Doces']" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="detalheProduto" class="form-label fw-semibold">Detalhe</label>
+            <input type="text" id="detalheProduto" class="form-control" placeholder="Ex: Requeijão Cremoso 500g"
+              formControlName="detalhe">
+          </div>
+
+          <div class="mb-3">
+            <label for="marcaProduto" class="form-label fw-semibold">Marca</label>
+            <input type="text" id="marcaProduto" class="form-control" placeholder="Ex: Itambé" formControlName="marca">
+          </div>
+
+          <div class="row">
+
+            <div class="col-md-6 mb-3">
+              <label for="precoCompra" class="form-label fw-semibold">Preço de Compra</label>
+              <input type="number" step="0.01" id="precoCompra" class="form-control" placeholder="Ex: 5.50"
+                formControlName="precoCompra">
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label for="precoVend" class="form-label fw-semibold">Preço de Venda</label>
+              <input type="number" step="0.01" id="precoVend" class="form-control" placeholder="Ex: 9.90"
+                formControlName="precoVenda">
+            </div>
+
+          </div>
+
+          <div class="mb-3">
+              <label for="qtdEstoque" class="form-label fw-semibold">Qtd. em Estoque</label>
+              <input type="number" id="qtdEstoque" class="form-control" placeholder="Ex: 20"
+                formControlName="quantidadeEstoque">
+          </div>
+
+          <div class="mb-3">
+            <label for="dataVencimento" class="form-label fw-semibold">Data de Vencimento</label>
+            <input type="date" id="dataVencimento" class="form-control" formControlName="vencimento">
+          </div>
+
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-primary"></div>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Rodapé -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="adicionarProduto()" data-bs-toggle="modal" data-bs-target="#modalAdicionarProduto">
+          <i class="bi bi-save me-1"></i>Salvar Produto
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
