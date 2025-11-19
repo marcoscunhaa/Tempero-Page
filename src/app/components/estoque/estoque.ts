@@ -24,7 +24,7 @@ export class Estoque implements OnInit {
   loading = false;
 
   categorias: { value: string; label: string }[] = [
-    { value: 'Todas', label: 'Todas as categorias' },
+    { value: 'todas', label: 'Todas as categorias' },
     { value: 'Carnes', label: 'Carnes' },
     { value: 'Temperos', label: 'Temperos' },
     { value: 'Bebidas', label: 'Bebidas' },
