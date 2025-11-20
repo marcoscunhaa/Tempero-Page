@@ -12,6 +12,7 @@ import { NotificacaoService, Notificacao } from '../../services/notificacao';
   styleUrls: ['./vendas.scss'],
 })
 export class Vendas implements OnInit {
+
   vendas: Venda[] = [];
   vendasFiltradas: Venda[] = [];
   resumo: ResumoVendasDTO = {
@@ -24,17 +25,40 @@ export class Vendas implements OnInit {
   categorias: string[] = ['todas', 'carnes', 'temperos', 'bebidas', 'frios', 'doces'];
   categoriaSelecionada: string = 'todas';
 
-  filtroTempo: 'diario' | 'semanal' | 'mensal' = 'diario';
+  anos: number[] = [];
+  anoSelecionado: number | 'todos' = 'todos';
+
+  meses = [
+    { nome: 'Janeiro', valor: 0 },
+    { nome: 'Fevereiro', valor: 1 },
+    { nome: 'Março', valor: 2 },
+    { nome: 'Abril', valor: 3 },
+    { nome: 'Maio', valor: 4 },
+    { nome: 'Junho', valor: 5 },
+    { nome: 'Julho', valor: 6 },
+    { nome: 'Agosto', valor: 7 },
+    { nome: 'Setembro', valor: 8 },
+    { nome: 'Outubro', valor: 9 },
+    { nome: 'Novembro', valor: 10 },
+    { nome: 'Dezembro', valor: 11 },
+  ];
+  mesSelecionado: number | 'todos' = 'todos';
 
   dataAtualizacao: string = '';
 
   alertaMensagem: string | null = null;
   tipoAlerta: 'success' | 'danger' | 'warning' | 'info' = 'success';
 
-  constructor(private vendaService: VendaService, private notificacaoService: NotificacaoService) {}
+  constructor(
+    private vendaService: VendaService,
+    private notificacaoService: NotificacaoService
+  ) {}
 
   ngOnInit() {
     this.setDataAtualizacao();
+
+    this.anos = Array.from({ length: 11 }, (_, i) => 2025 + i);
+
     this.carregarResumo();
     this.carregarVendas();
 
@@ -46,14 +70,12 @@ export class Vendas implements OnInit {
     });
   }
 
-  // Define mês/ano para exibição
   setDataAtualizacao() {
     const hoje = new Date();
     const opcoes: Intl.DateTimeFormatOptions = { month: 'short', year: 'numeric' };
     this.dataAtualizacao = hoje.toLocaleDateString('pt-BR', opcoes).toUpperCase();
   }
 
-  // Carrega todas as vendas
   carregarVendas() {
     this.vendaService.listarVendas().subscribe({
       next: (lista) => {
@@ -63,7 +85,6 @@ export class Vendas implements OnInit {
     });
   }
 
-  // Carrega resumo de vendas
   carregarResumo() {
     this.vendaService.getResumo().subscribe({
       next: (res) => (this.resumo = res),
@@ -71,72 +92,36 @@ export class Vendas implements OnInit {
     });
   }
 
-  // FILTRA POR CATEGORIA
-  filtrarCategoria(categoria: string) {
-    this.categoriaSelecionada = categoria;
-    this.filtrarVendas();
-  }
-
-  // FILTRA POR TEMPO
-  filtrarTempo(filtro: 'diario' | 'semanal' | 'mensal') {
-    this.filtroTempo = filtro;
-    this.filtrarVendas();
-  }
-
-  // FILTROS DA TABELA
   filtrarVendas() {
-    const hoje = new Date();
-    const anoHoje = hoje.getFullYear();
-    const mesHoje = hoje.getMonth();
-    const diaHoje = hoje.getDate();
-
     this.vendasFiltradas = this.vendas.filter((venda) => {
-      const { ano, mes, dia } = parseLocalDate(venda.dataVenda);
+      const { ano, mes } = parseLocalDate(venda.dataVenda);
 
       const categoriaOk =
         this.categoriaSelecionada === 'todas' ||
         venda.categoria.toLowerCase() === this.categoriaSelecionada.toLowerCase();
 
-      let tempoOk = true;
+      const anoOk =
+        this.anoSelecionado === 'todos' || ano === this.anoSelecionado;
 
-      if (this.filtroTempo === 'diario') {
-        tempoOk = ano === anoHoje && mes === mesHoje && dia === diaHoje;
-      } else if (this.filtroTempo === 'semanal') {
-        const dataVenda = new Date(ano, mes, dia);
-        const hojeDia = new Date(anoHoje, mesHoje, diaHoje);
+      const mesOk =
+        this.mesSelecionado === 'todos' || mes === this.mesSelecionado;
 
-        const primeiro = new Date(hojeDia);
-        primeiro.setDate(hojeDia.getDate() - hojeDia.getDay());
-
-        const ultimo = new Date(primeiro);
-        ultimo.setDate(primeiro.getDate() + 6);
-
-        tempoOk = dataVenda >= primeiro && dataVenda <= ultimo;
-      } else if (this.filtroTempo === 'mensal') {
-        tempoOk = ano === anoHoje && mes === mesHoje;
-      }
-
-      return categoriaOk && tempoOk;
+      return categoriaOk && anoOk && mesOk;
     });
   }
 
-  // Formata valor em moeda brasileira
   formatarMoeda(valor: number): string {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  // Calcula lucro corretamente
   formatarLucro(venda: Venda): string {
     const compra = venda.precoCompra ?? 0;
     const vendaValor = venda.precoVenda ?? 0;
     const quantidade = venda.quantidadeVendida ?? 1;
-
     const lucro = (vendaValor - compra) * quantidade;
-
     return this.formatarMoeda(lucro);
   }
 
-  // Quando uma venda for finalizada em outro modal
   finalizarVenda(novaVenda: Venda) {
     this.vendaService.criarVenda(novaVenda).subscribe({
       next: (vendaSalva) => {
@@ -149,9 +134,33 @@ export class Vendas implements OnInit {
   }
 }
 
-// Função para converter 'YYYY-MM-DD'
 function parseLocalDate(dataVenda: string): { ano: number; mes: number; dia: number } {
-  const [anoStr, mesStr, diaStr] = dataVenda.split('-');
+
+  if (!dataVenda || dataVenda.trim().length < 8) {
+    return { ano: 0, mes: 0, dia: 0 };
+  }
+
+  dataVenda = dataVenda.trim();
+
+  if (dataVenda.includes('T')) {
+    const d = new Date(dataVenda);
+    return {
+      ano: d.getFullYear(),
+      mes: d.getMonth(),
+      dia: d.getDate(),
+    };
+  }
+
+  if (dataVenda.includes('/')) {
+    const [diaStr, mesStr, anoStr] = dataVenda.split('/').map(p => p.trim());
+    return {
+      ano: Number(anoStr),
+      mes: Number(mesStr) - 1,
+      dia: Number(diaStr),
+    };
+  }
+
+  const [anoStr, mesStr, diaStr] = dataVenda.split('-').map(p => p.trim());
   return {
     ano: Number(anoStr),
     mes: Number(mesStr) - 1,

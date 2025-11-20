@@ -8,7 +8,7 @@
     </h3>
 
     <span class="badge bg-success fs-6 px-3 py-2 shadow-sm">
-     Atualizado: {{ dataAtualizacao }}
+      Atualizado: {{ dataAtualizacao }}
     </span>
   </div>
 
@@ -49,20 +49,34 @@
       </span>
 
       <!-- Filtros -->
-      <div class="d-flex gap-2">
-        <select class="form-select w-auto bg-light border-0 shadow-sm fw-semibold" [(ngModel)]="filtroTempo"
-          (change)="filtrarVendas()">
-          <option value="diario">Vendas Diárias</option>
-          <option value="semanal">Vendas Semanais</option>
-          <option value="mensal">Vendas Mensais</option>
-        </select>
+      <div class="d-flex gap-2 flex-wrap">
 
-        <select class="form-select w-auto bg-light border-0 shadow-sm fw-semibold" [(ngModel)]="categoriaSelecionada"
-          (change)="filtrarVendas()">
+        <!-- Categoria -->
+        <select class="form-select w-auto bg-light border-0 shadow-sm fw-semibold"
+          [(ngModel)]="categoriaSelecionada" (change)="filtrarVendas()">
           @for (cat of categorias; track $index) {
-          <option value="{{ cat }}">{{ cat | titlecase }}</option>
+            <option [ngValue]="cat">{{ cat | titlecase }}</option>
           }
         </select>
+
+        <!-- Mês -->
+        <select class="form-select w-auto bg-light border-0 shadow-sm fw-semibold"
+          [(ngModel)]="mesSelecionado" (change)="filtrarVendas()">
+          <option [ngValue]="'todos'">Todos Meses</option>
+          @for (m of meses; track $index) {
+            <option [ngValue]="m.valor">{{ m.nome }}</option>
+          }
+        </select>
+
+        <!-- Ano -->
+        <select class="form-select w-auto bg-light border-0 shadow-sm fw-semibold"
+          [(ngModel)]="anoSelecionado" (change)="filtrarVendas()">
+          <option [ngValue]="'todos'">Todos Anos</option>
+          @for (ano of anos; track $index) {
+            <option [ngValue]="ano">{{ ano }}</option>
+          }
+        </select>
+
       </div>
 
     </div>
@@ -70,6 +84,7 @@
     <div class="card-body p-0">
 
       @defer (when vendasFiltradas.length > 0) {
+
       <table class="table table-hover align-middle mb-0 text-center">
         <thead class="table-light fw-bold">
           <tr>
@@ -86,23 +101,24 @@
 
         <tbody>
           @for (venda of vendasFiltradas; track venda.id) {
-          <tr>
-            <td>{{ venda.dataVenda | date:'dd/MM/yyyy' }}</td>
-            <td>{{ venda.categoria | titlecase }}</td>
-            <td>{{ venda.produto }}</td>
-            <td>{{ venda.marca }}</td>
-            <td>{{ formatarMoeda(venda.precoVenda) }}</td>
-            <td>{{ venda.quantidadeVendida }}</td>
-            <td>{{ venda.formaPagamento }}</td>
-            <td class="text-success fw-bold">{{ formatarLucro(venda) }}</td>
-          </tr>
+            <tr>
+              <td>{{ venda.dataVenda | date:'dd/MM/yyyy' }}</td>
+              <td>{{ venda.categoria | titlecase }}</td>
+              <td>{{ venda.produto }}</td>
+              <td>{{ venda.marca }}</td>
+              <td>{{ formatarMoeda(venda.precoVenda) }}</td>
+              <td>{{ venda.quantidadeVendida }}</td>
+              <td>{{ venda.formaPagamento }}</td>
+              <td class="text-success fw-bold">{{ formatarLucro(venda) }}</td>
+            </tr>
           } @empty {
-          <tr>
-            <td colspan="8" class="py-4 text-muted">Nenhuma venda encontrada.</td>
-          </tr>
+            <tr>
+              <td colspan="8" class="py-4 text-muted">Nenhuma venda encontrada.</td>
+            </tr>
           }
         </tbody>
       </table>
+
       } @placeholder {
       <div class="text-center py-5">
         <div class="mt-2 text-muted fw-semibold">Nenhuma venda encontrada.</div>
