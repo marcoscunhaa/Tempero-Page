@@ -30,7 +30,7 @@ export class ModalVender {
     private vendaService: VendaService,
     private notificacaoService: NotificacaoService,
     private fb: FormBuilder
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.formVenda = this.fb.group({
@@ -98,11 +98,14 @@ export class ModalVender {
   }
 
   filtrar(event: any) {
-    const termo = event.target.value.toLowerCase();
-    this.produtosFiltrados = this.produtos.filter(
-      p => p.detalhe.toLowerCase().includes(termo) || p.marca.toLowerCase().includes(termo)
+    const termo = event.target.value.toLowerCase().trim();
+
+    this.produtosFiltrados = this.produtos.filter(p =>
+      p.detalhe.toLowerCase().includes(termo) ||
+      p.marca.toLowerCase().includes(termo)
     );
   }
+
 
   atualizarTotal() {
     this.total = this.produtosFormArray.controls
