@@ -16,6 +16,13 @@ import { forkJoin } from 'rxjs';
 export class ModalVender {
   produtos: Produto[] = [];
   produtosFiltrados: Produto[] = [];
+  
+  // 🔥 paginação
+  paginaAtual = 1;
+  itensPorPagina = 5;
+  paginaAtualProdutos: Produto[] = [];
+  totalPaginas = 1;
+
   vendas: Venda[] = [];
 
   total = 0;
@@ -47,7 +54,7 @@ export class ModalVender {
     this.formVenda.get('formaPagamento')?.valueChanges.subscribe(() => this.calcularTroco());
   }
 
-  // -- GETTERS ---
+  // GETTERS
   get produtosFormArray(): FormArray<FormGroup> {
     return this.formVenda.get('produtos') as FormArray<FormGroup>;
   }
@@ -64,9 +71,47 @@ export class ModalVender {
     return this.formVenda.get('valorRecebido')?.value;
   }
 
-  // 🔥 CORREÇÃO FUNDAMENTAL
+  // 🔥 Getter para o HTML acessar os itens selecionados
+  get itensSelecionados() {
+    return this.produtosFormArray.controls
+      .filter((c) => c.value.selecionado)
+      .map((c) => c.value);
+  }
+
+  // 🔥 necessário para vincular form pelo ID
   getFormGroupById(id: number | undefined): FormGroup {
     return this.produtosFormArray.controls.find((c) => c.value.id === id)!;
+  }
+
+  // 🔥 Atualiza a página visível
+  atualizarPaginacao() {
+    this.totalPaginas = Math.ceil(this.produtosFiltrados.length / this.itensPorPagina);
+    if (this.paginaAtual > this.totalPaginas) this.paginaAtual = this.totalPaginas || 1;
+
+    const início = (this.paginaAtual - 1) * this.itensPorPagina;
+    const fim = início + this.itensPorPagina;
+
+    this.paginaAtualProdutos = this.produtosFiltrados.slice(início, fim);
+  }
+
+  // Botões do paginador
+  paginaAnterior() {
+    if (this.paginaAtual > 1) {
+      this.paginaAtual--;
+      this.atualizarPaginacao();
+    }
+  }
+
+  proximaPagina() {
+    if (this.paginaAtual < this.totalPaginas) {
+      this.paginaAtual++;
+      this.atualizarPaginacao();
+    }
+  }
+
+  // TrackBy performance
+  trackById(index: number, item: Produto) {
+    return item.id;
   }
 
   carregarProdutos() {
@@ -88,7 +133,6 @@ export class ModalVender {
               precoCompra: [p.precoCompra],
               precoVenda: [p.precoVenda],
               quantidadeEstoque: [p.quantidadeEstoque],
-
               selecionado: [false],
               vendaPorPeso: [false],
               valorPeso: [0],
@@ -97,6 +141,7 @@ export class ModalVender {
           );
         });
 
+        this.atualizarPaginacao();
         this.loading = false;
       },
 
@@ -108,8 +153,13 @@ export class ModalVender {
     const termo = event.target.value.toLowerCase().trim();
 
     this.produtosFiltrados = this.produtos.filter(
-      (p) => p.detalhe.toLowerCase().includes(termo) || p.marca.toLowerCase().includes(termo)
+      (p) =>
+        p.detalhe.toLowerCase().includes(termo) ||
+        p.marca.toLowerCase().includes(termo)
     );
+
+    this.paginaAtual = 1;
+    this.atualizarPaginacao();
   }
 
   atualizarTotal() {
@@ -131,7 +181,6 @@ export class ModalVender {
         const p = c.value;
 
         const totalVenda = p.vendaPorPeso ? p.valorPeso : p.precoVenda * p.quantidadeVenda;
-
         const totalCompra = p.precoCompra * p.quantidadeVenda;
 
         return lucro + (totalVenda - totalCompra);
@@ -147,7 +196,6 @@ export class ModalVender {
     const recebido = Number(this.valorRecebido || 0);
 
     this.troco = recebido - this.total;
-
     if (this.troco < 0) this.troco = 0;
   }
 
@@ -156,7 +204,6 @@ export class ModalVender {
       .filter((c) => c.value.selecionado)
       .map((c) => c.value);
 
-    // --- validações ---
     if (selecionados.length === 0) {
       this.notificacaoService.emitirAviso('Selecione ao menos um produto.');
       return;
@@ -164,7 +211,9 @@ export class ModalVender {
 
     const semEstoque = selecionados.find((p) => p.quantidadeEstoque === 0);
     if (semEstoque) {
-      this.notificacaoService.emitirErro(`O produto "${semEstoque.detalhe}" está sem estoque!`);
+      this.notificacaoService.emitirErro(
+        `O produto "${semEstoque.detalhe}" está sem estoque!`
+      );
       return;
     }
 
@@ -188,7 +237,6 @@ export class ModalVender {
       return;
     }
 
-    // --- salvar vendas ---
     this.loading = true;
 
     const requests = selecionados.map((p) => {
@@ -235,7 +283,6 @@ export class ModalVender {
       },
 
       error: () => this.notificacaoService.emitirErro('Venda não foi realizada!'),
-
       complete: () => (this.loading = false),
     });
   }

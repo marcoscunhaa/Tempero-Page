@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ProdutoService, Produto } from '../../services/produto';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NotificacaoService, TipoAlerta, Notificacao } from '../../services/notificacao';
 import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   standalone: true,
@@ -11,9 +12,10 @@ import { CommonModule } from '@angular/common';
   templateUrl: './modal-inserir.html',
   styleUrls: ['./modal-inserir.scss'],
 })
-export class ModalInserir {
+export class ModalInserir implements OnInit {
   loading = false;
   produtoForm: FormGroup;
+  produtosExistentes: Produto[] = [];
 
   alertaMensagem: string | null = null;
   tipoAlerta: TipoAlerta = 'success';
@@ -35,10 +37,15 @@ export class ModalInserir {
   }
 
   ngOnInit() {
-    // Recebe qualquer notificação (sucesso, erro, warning, info)
     this.notificacaoService.notificacao$.subscribe((notif: Notificacao) => {
       this.alertaMensagem = notif.mensagem;
       this.tipoAlerta = notif.tipo;
+    });
+
+    // Carrega produtos existentes para validação
+    this.produtoService.listarTodos().subscribe({
+      next: (prods) => this.produtosExistentes = prods,
+      error: () => this.produtosExistentes = []
     });
   }
 
@@ -49,19 +56,30 @@ export class ModalInserir {
     }
 
     const novoProduto: Produto = this.produtoForm.value;
+
+    // Validação no frontend: verifica se já existe detalhe igual
+    const existeDetalhe = this.produtosExistentes.some(
+      p => p.detalhe.trim().toLowerCase() === novoProduto.detalhe.trim().toLowerCase()
+    );
+
+    if (existeDetalhe) {
+      this.notificacaoService.emitirErro('Já existe um produto com essa descrição!');
+      return;
+    }
+
     this.loading = true;
 
-    this.produtoService.salvar(novoProduto).subscribe({
-      next: () => {
-        this.produtoForm.reset();
-        this.notificacaoService.emitirSucesso('Produto salvo com sucesso!');
-      },
-      error: () => {
-        this.notificacaoService.emitirErro('Erro ao salvar o produto.');
-      },
-      complete: () => {
-        this.loading = false;
-      },
-    });
+    this.produtoService.salvar(novoProduto)
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: () => {
+          this.produtoForm.reset();
+          this.notificacaoService.emitirSucesso('Produto salvo com sucesso!');
+          this.produtoService.listarTodos().subscribe(prods => this.produtosExistentes = prods);
+        },
+        error: () => {
+          this.notificacaoService.emitirErro('Erro ao salvar o produto.');
+        }
+      });
   }
 }

@@ -1,0 +1,51 @@
+/* Fundo metálico suave */
+.elegant-table thead th {
+  background: linear-gradient(180deg, #d3e8db, #ecf2f9);
+  color: #1a1f2b;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-bottom: 2px solid #d6deea;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  letter-spacing: 0.5px;
+}
+
+/* Borda arredondada */
+.elegant-table {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Linhas elegantes */
+.elegant-table tbody tr {
+  transition: background 0.18s ease-in-out;
+}
+
+.elegant-table tbody tr:hover {
+  background: #ddf3eb;
+}
+
+/* Células */
+.elegant-table td {
+  padding: 16px 12px;
+  vertical-align: middle;
+}
+
+/* Inputs */
+.qty-input {
+  width: 90px;
+  margin: 0 auto;
+  border-radius: 10px;
+  border: 1px solid #cbd4e1;
+  transition: box-shadow 0.15s ease;
+}
+
+.qty-input:focus {
+  box-shadow: 0 0 0 3px rgba(80, 125, 255, 0.25);
+}
+
+/* Checkbox centralizado */
+td input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}

@@ -23,6 +23,12 @@ export class Estoque implements OnInit {
   tipoAlerta: TipoAlerta = 'success';
   loading = false;
 
+  // PAGINAÇÃO
+  paginaAtual = 1;
+  totalPaginas = 1;
+  paginas: number[] = [];
+  itensPorPagina = 5;
+
   categorias: { value: string; label: string }[] = [
     { value: 'todas', label: 'Todas as categorias' },
     { value: 'Carnes', label: 'Carnes' },
@@ -72,6 +78,8 @@ export class Estoque implements OnInit {
 
       return categoriaOk && pesquisaOk;
     });
+
+    this.atualizarPaginacao();
   }
 
   onCategoriaChange(event: Event) {
@@ -111,11 +119,40 @@ export class Estoque implements OnInit {
         this.notificacaoService.emitirSucesso('Produto atualizado com sucesso!');
         this.carregarProdutos();
       },
-      error: () => {
-        this.notificacaoService.emitirErro('Erro ao atualizar produto');
+      error: (err) => {
+        if (err.status === 409) {
+          this.notificacaoService.emitirErro(err.error);
+        } else {
+          this.notificacaoService.emitirErro('Erro ao atualizar produto');
+        }
       },
     });
   }
 
+  // ---------------- PAGINAÇÃO ----------------
 
+  atualizarPaginacao() {
+    this.totalPaginas = Math.ceil(this.produtosFiltrados.length / this.itensPorPagina);
+    this.paginas = Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
+
+    // Garante que a página atual não passe do total
+    if (this.paginaAtual > this.totalPaginas) {
+      this.paginaAtual = this.totalPaginas;
+    }
+    if (this.paginaAtual < 1) this.paginaAtual = 1;
+  }
+
+  irParaPagina(pagina: number) {
+    if (pagina < 1 || pagina > this.totalPaginas) return;
+    this.paginaAtual = pagina;
+  }
+
+  produtosNaPagina(): Produto[] {
+    const inicio = (this.paginaAtual - 1) * this.itensPorPagina;
+    return this.produtosFiltrados.slice(inicio, inicio + this.itensPorPagina);
+  }
+
+  trackByIndex(index: number) {
+    return index;
+  }
 }

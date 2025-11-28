@@ -15,6 +15,14 @@ import { GraficosComponent } from '../graficos/graficos';
 export class Vendas implements OnInit {
   vendas: Venda[] = [];
   vendasFiltradas: Venda[] = [];
+  vendasPaginadas: Venda[] = [];
+
+  // Paginação
+  paginaAtual = 1;
+  itensPorPagina = 5;
+  totalPaginas = 1;
+  paginas: number[] = [];
+
   resumo: ResumoVendasDTO = {
     totalVendido: 0,
     totalComprado: 0,
@@ -64,15 +72,8 @@ export class Vendas implements OnInit {
     this.notificacaoService.notificacao$.subscribe((notif: Notificacao) => {
       this.alertaMensagem = notif.mensagem;
       this.tipoAlerta = notif.tipo;
-
-      // Carrega vendas e só rola para o topo depois da lista atualizada
-      this.vendaService.listarVendas().subscribe((lista) => {
-        this.vendas = lista;
-        this.filtrarVendas();
-      });
-      this.vendaService.getResumo().subscribe((res) => {
-        this.resumo = res;
-      });
+      this.carregarVendas();
+      this.carregarResumo();
     });
   }
 
@@ -94,7 +95,6 @@ export class Vendas implements OnInit {
   carregarResumo() {
     this.vendaService.getResumo().subscribe({
       next: (res) => (this.resumo = res),
-      error: (err) => console.error('Erro ao carregar resumo:', err),
     });
   }
 
@@ -112,6 +112,33 @@ export class Vendas implements OnInit {
 
       return categoriaOk && anoOk && mesOk;
     });
+
+    this.paginaAtual = 1;
+    this.atualizarPaginacao();
+  }
+
+  atualizarPaginacao() {
+    this.totalPaginas = Math.ceil(this.vendasFiltradas.length / this.itensPorPagina);
+    this.paginas = Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
+
+    // Corrige limites
+    if (this.paginaAtual > this.totalPaginas) this.paginaAtual = this.totalPaginas;
+    if (this.paginaAtual < 1) this.paginaAtual = 1;
+
+    const inicio = (this.paginaAtual - 1) * this.itensPorPagina;
+    const fim = inicio + this.itensPorPagina;
+
+    this.vendasPaginadas = this.vendasFiltradas.slice(inicio, fim);
+  }
+
+  irParaPagina(pagina: number) {
+    if (pagina < 1 || pagina > this.totalPaginas) return;
+    this.paginaAtual = pagina;
+    this.atualizarPaginacao();
+  }
+
+  trackByIndex(index: number) {
+    return index;
   }
 
   formatarMoeda(valor: number): string {
@@ -133,29 +160,20 @@ export class Vendas implements OnInit {
         this.filtrarVendas();
         this.carregarResumo();
       },
-      error: (err) => console.error('Erro ao finalizar venda:', err),
     });
   }
 }
 
 function parseLocalDate(dataVenda: string): { ano: number; mes: number; dia: number } {
-  if (!dataVenda || dataVenda.trim().length < 8) {
-    return { ano: 0, mes: 0, dia: 0 };
-  }
-
-  dataVenda = dataVenda.trim();
+  if (!dataVenda) return { ano: 0, mes: 0, dia: 0 };
 
   if (dataVenda.includes('T')) {
     const d = new Date(dataVenda);
-    return {
-      ano: d.getFullYear(),
-      mes: d.getMonth(),
-      dia: d.getDate(),
-    };
+    return { ano: d.getFullYear(), mes: d.getMonth(), dia: d.getDate() };
   }
 
   if (dataVenda.includes('/')) {
-    const [diaStr, mesStr, anoStr] = dataVenda.split('/').map((p) => p.trim());
+    const [diaStr, mesStr, anoStr] = dataVenda.split('/');
     return {
       ano: Number(anoStr),
       mes: Number(mesStr) - 1,
@@ -163,10 +181,6 @@ function parseLocalDate(dataVenda: string): { ano: number; mes: number; dia: num
     };
   }
 
-  const [anoStr, mesStr, diaStr] = dataVenda.split('-').map((p) => p.trim());
-  return {
-    ano: Number(anoStr),
-    mes: Number(mesStr) - 1,
-    dia: Number(diaStr),
-  };
+  const [ano, mes, dia] = dataVenda.split('-').map(Number);
+  return { ano, mes: mes - 1, dia };
 }
