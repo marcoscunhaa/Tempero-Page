@@ -104,11 +104,11 @@
           <tr>
             <th>Categoria</th>
             <th>Descrição do Produto</th>
-            <th>Pagamento</th>
-            <th>Venda (R$)</th>
-            <th>Qtd</th>
-            <th>Lucro (R$)</th>
-            <th>Data</th>
+            <th>Forma de Pagamento</th>
+            <th>Valor de Venda(R$)</th>
+            <th>Quantidade</th>
+            <th>Lucro(R$)</th>
+            <th>Data de Venda</th>
           </tr>
         </thead>
 
@@ -140,8 +140,10 @@
           </tr>
           } @empty {
           <tr>
-            <td colspan="8" class="py-4 text-muted">Nenhuma venda encontrada.</td>
-          </tr>
+              <td colspan="7" class="text-center py-5 text-muted fs-6">
+                Nenhum produto encontrado
+              </td>
+            </tr>
           }
         </tbody>
       </table>
