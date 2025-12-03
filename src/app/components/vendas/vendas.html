@@ -1,3 +1,110 @@
+<!-- ================================
+      MODAL EDITAR VENDA
+================================ -->
+<div class="modal fade" id="modalEditarVenda" tabindex="-1" aria-labelledby="modalEditarVendaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg border-0">
+
+      <!-- Cabeçalho amarelo -->
+      <div class="modal-header bg-warning text-dark rounded-top-4">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-pencil-square me-2"></i>Editar Venda
+        </h5>
+        <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" *ngIf="vendaSelecionada">
+        <form #formEditarVenda="ngForm">
+
+          <div class="mb-3">
+            <label class="fw-semibold">Produto</label>
+            <input type="text" class="form-control" [(ngModel)]="vendaSelecionada.produto" name="produto" />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Marca</label>
+            <input type="text" class="form-control" [(ngModel)]="vendaSelecionada.marca" name="marca" />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Quantidade</label>
+            <input type="number" class="form-control" [(ngModel)]="vendaSelecionada.quantidadeVendida"
+              name="quantidadeVendida" />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Valor de Venda (R$)</label>
+            <input type="number" class="form-control" step="0.01" [(ngModel)]="vendaSelecionada.precoVenda"
+              name="precoVenda" />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Lucro (R$)</label>
+            <input type="number" class="form-control" step="0.01" [(ngModel)]="vendaSelecionada.lucro" name="lucro" />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Forma de Pagamento</label>
+            <select class="form-select" [(ngModel)]="vendaSelecionada.formaPagamento" name="formaPagamento">
+              <option value="Dinheiro">Dinheiro</option>
+              <option value="Pix">Pix</option>
+              <option value="Débito">Débito</option>
+              <option value="Crédito">Crédito</option>
+            </select>
+          </div>
+
+
+          <div class="mb-3">
+            <label class="fw-semibold">Data da Venda</label>
+            <input type="date" class="form-control" [(ngModel)]="vendaSelecionada.dataVenda" name="dataVenda" />
+          </div>
+
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-warning text-dark fw-semibold" (click)="salvarEdicaoVenda()" data-bs-dismiss="modal">
+          <i class="bi bi-save me-1"></i>Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ================================
+      MODAL EXCLUIR VENDA
+================================ -->
+<div class="modal fade" id="modalExcluirVenda" tabindex="-1" aria-labelledby="modalExcluirVendaLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg border-0">
+
+      <div class="modal-header bg-danger text-white rounded-top-4">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-exclamation-triangle me-2"></i>Excluir Venda
+        </h5>
+
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center fs-5">
+        Tem certeza que deseja excluir a venda de:
+        <br />
+        <strong>{{ vendaSelecionada?.produto }}</strong>?
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Não</button>
+        <button class="btn btn-danger" data-bs-dismiss="modal" (click)="confirmarExcluirVenda()">
+          Sim
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Card de Vendas e Lucros -->
 <div class="card shadow-lg rounded-4 p-4 mt-4">
 
@@ -109,6 +216,7 @@
             <th>Quantidade</th>
             <th>Lucro(R$)</th>
             <th>Data de Venda</th>
+            <th class="text-center">Ações</th> <!-- NOVO -->
           </tr>
         </thead>
 
@@ -132,15 +240,34 @@
               {{ venda.produto }}
               <div class="small text-muted mt-1">{{ venda.marca }}</div>
             </td>
+
             <td class="fw-semibold">{{ venda.formaPagamento }}</td>
             <td>{{ formatarMoeda(venda.precoVenda) }}</td>
             <td>{{ venda.quantidadeVendida }}</td>
-            <td>{{ formatarMoeda(venda.lucro?? 0) }}</td>
+            <td>{{ formatarMoeda(venda.lucro ?? 0) }}</td>
             <td class="py-3 px-4 text-muted">{{ venda.dataVenda | date:'dd/MM/yyyy' }}</td>
+
+            <!-- AÇÕES -->
+            <td class="text-center py-3">
+
+              <!-- Botão Editar -->
+              <button class="btn btn-sm btn-outline-warning rounded-circle me-2" (click)="editarVenda(venda)"
+                data-bs-toggle="modal" data-bs-target="#modalEditarVenda">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+
+
+              <!-- Botão Deletar -->
+              <button class="btn btn-sm btn-outline-danger rounded-circle" (click)="abrirModalExcluir(venda)"
+                data-bs-toggle="modal" data-bs-target="#modalExcluirVenda">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+
           </tr>
           } @empty {
           <tr>
-            <td colspan="7" class="text-center py-5 text-muted fs-6">
+            <td colspan="8" class="text-center py-5 text-muted fs-6">
               Nenhum produto encontrado
             </td>
           </tr>
@@ -156,23 +283,19 @@
 
       <!-- ANTERIOR -->
       <li class="page-item" [class.disabled]="paginaAtual === 1">
-        <button class="page-link rounded-circle px-3 py-2"
-          (click)="irParaPagina(paginaAtual - 1)"
+        <button class="page-link rounded-circle px-3 py-2" (click)="irParaPagina(paginaAtual - 1)"
           aria-label="Anterior">
           <i class="bi bi-chevron-left"></i>
         </button>
       </li>
 
       <!-- PÁGINAS (compactas + ...) -->
-      <li class="page-item"
-          *ngFor="let pagina of paginasVisiveis; trackBy: trackByIndex"
-          [class.active]="paginaAtual === pagina && pagina !== -1">
+      <li class="page-item" *ngFor="let pagina of paginasVisiveis; trackBy: trackByIndex"
+        [class.active]="paginaAtual === pagina && pagina !== -1">
 
         <!-- Página normal -->
         <ng-container *ngIf="pagina !== -1; else pontos">
-          <button class="page-link rounded-circle px-3 py-2"
-            (click)="irParaPagina(pagina)"
-            [ngClass]="{
+          <button class="page-link rounded-circle px-3 py-2" (click)="irParaPagina(pagina)" [ngClass]="{
               'bg-primary text-white': paginaAtual === pagina,
               'text-primary': paginaAtual !== pagina
             }">
@@ -190,9 +313,7 @@
 
       <!-- PRÓXIMO -->
       <li class="page-item" [class.disabled]="paginaAtual === totalPaginas">
-        <button class="page-link rounded-circle px-3 py-2"
-          (click)="irParaPagina(paginaAtual + 1)"
-          aria-label="Próximo">
+        <button class="page-link rounded-circle px-3 py-2" (click)="irParaPagina(paginaAtual + 1)" aria-label="Próximo">
           <i class="bi bi-chevron-right"></i>
         </button>
       </li>

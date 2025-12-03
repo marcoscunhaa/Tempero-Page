@@ -17,12 +17,10 @@ export class Vendas implements OnInit {
   vendasFiltradas: Venda[] = [];
   vendasPaginadas: Venda[] = [];
 
-  // Paginação compacta
   paginaAtual = 1;
   itensPorPagina = 15;
   totalPaginas = 1;
-
-  paginasVisiveis: number[] = []; // <-- NOVO
+  paginasVisiveis: number[] = [];
 
   resumo: ResumoVendasDTO = {
     totalVendido: 0,
@@ -54,14 +52,12 @@ export class Vendas implements OnInit {
   mesSelecionado: number | 'todos' = 'todos';
 
   dataAtualizacao: string = '';
-
   alertaMensagem: string | null = null;
   tipoAlerta: 'success' | 'danger' | 'warning' | 'info' = 'success';
 
-  constructor(
-    private vendaService: VendaService,
-    private notificacaoService: NotificacaoService
-  ) {}
+  vendaSelecionada: Venda | null = null; // usada no modal de edição/exclusão
+
+  constructor(private vendaService: VendaService, private notificacaoService: NotificacaoService) {}
 
   ngOnInit() {
     this.setDataAtualizacao();
@@ -120,24 +116,21 @@ export class Vendas implements OnInit {
   atualizarPaginacao() {
     this.totalPaginas = Math.ceil(this.vendasFiltradas.length / this.itensPorPagina);
 
-    // Corrige limites
     if (this.paginaAtual > this.totalPaginas) this.paginaAtual = this.totalPaginas;
     if (this.paginaAtual < 1) this.paginaAtual = 1;
 
-    // Slice dos itens da página
     const inicio = (this.paginaAtual - 1) * this.itensPorPagina;
     const fim = inicio + this.itensPorPagina;
     this.vendasPaginadas = this.vendasFiltradas.slice(inicio, fim);
 
-    // ---- PAGINAÇÃO VISÍVEL DINÂMICA ----
-    const max = 3; // qnt. de páginas ao redor da página atual
+    const max = 3;
     let inicioPag = Math.max(1, this.paginaAtual - max);
     let fimPag = Math.min(this.totalPaginas, this.paginaAtual + max);
 
     const paginas: number[] = [];
 
     if (inicioPag > 1) paginas.push(1);
-    if (inicioPag > 2) paginas.push(-1); // "..."
+    if (inicioPag > 2) paginas.push(-1);
 
     for (let i = inicioPag; i <= fimPag; i++) paginas.push(i);
 
@@ -178,8 +171,73 @@ export class Vendas implements OnInit {
       },
     });
   }
+
+  // ------------------------------
+  // EDITAR VENDA
+  // ------------------------------
+  editarVenda(venda: Venda) {
+    this.vendaSelecionada = { ...venda };
+
+    // Garante que a forma de pagamento seja válida ou define padrão
+    const formasValidas = ['Dinheiro', 'Pix', 'Débito', 'Crédito'];
+    if (!formasValidas.includes(this.vendaSelecionada.formaPagamento)) {
+      this.vendaSelecionada.formaPagamento = 'Dinheiro';
+    }
+
+    // Converter data para yyyy-MM-dd se necessário
+    if (this.vendaSelecionada.dataVenda.includes('/')) {
+      const [d, m, a] = this.vendaSelecionada.dataVenda.split('/');
+      this.vendaSelecionada.dataVenda = `${a}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+  }
+
+  salvarEdicaoVenda() {
+    if (!this.vendaSelecionada || !this.vendaSelecionada.id) return;
+
+    this.vendaService.atualizarVenda(this.vendaSelecionada.id, this.vendaSelecionada).subscribe({
+      next: (vendaAtualizada) => {
+        this.notificacaoService.emitirSucesso('Venda atualizada com sucesso!');
+        const index = this.vendas.findIndex((v) => v.id === vendaAtualizada.id);
+        if (index !== -1) this.vendas[index] = vendaAtualizada;
+        this.filtrarVendas();
+      },
+    });
+  }
+
+  // Getter para lucro da venda selecionada no modal
+  get lucroVendaSelecionada(): string {
+    if (!this.vendaSelecionada) return this.formatarMoeda(0);
+    const compra = this.vendaSelecionada.precoCompra ?? 0;
+    const venda = this.vendaSelecionada.precoVenda ?? 0;
+    const qtd = this.vendaSelecionada.quantidadeVendida ?? 1;
+    const lucro = (venda - compra) * qtd;
+    return this.formatarMoeda(lucro);
+  }
+
+  // ------------------------------
+  // DELETAR VENDA
+  // ------------------------------
+  abrirModalExcluir(venda: Venda) {
+    this.vendaSelecionada = venda;
+  }
+
+  confirmarExcluirVenda() {
+    if (!this.vendaSelecionada || !this.vendaSelecionada.id) return;
+
+    this.vendaService.deletarVenda(this.vendaSelecionada.id).subscribe({
+      next: () => {
+        this.vendas = this.vendas.filter((v) => v.id !== this.vendaSelecionada!.id);
+        this.filtrarVendas();
+        this.carregarResumo();
+        this.notificacaoService.emitirSucesso('Venda excluída com sucesso!');
+      },
+    });
+  }
 }
 
+// ------------------------------
+// FUNÇÃO AUXILIAR PARA PARSE DE DATAS
+// ------------------------------
 function parseLocalDate(dataVenda: string): { ano: number; mes: number; dia: number } {
   if (!dataVenda) return { ano: 0, mes: 0, dia: 0 };
 

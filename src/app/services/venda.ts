@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // MODELOS
@@ -32,26 +32,37 @@ export class VendaService {
 
   constructor(private http: HttpClient) {}
 
-  // LISTAR VENDAS (com filtro por categoria)
-  listarVendas(categoria: string = 'todas'): Observable<Venda[]> {
-    let params = new HttpParams();
-    if (categoria && categoria.toLowerCase() !== 'todas') {
-      params = params.set('categoria', categoria);
-    }
-    return this.http.get<Venda[]>(this.apiUrl, { params });
+  // =============================
+  // LISTAR TODAS AS VENDAS
+  // =============================
+  listarVendas(): Observable<Venda[]> {
+    return this.http.get<Venda[]>(this.apiUrl);
   }
 
+  // =============================
   // CRIAR VENDA
+  // =============================
   criarVenda(venda: Venda): Observable<Venda> {
     return this.http.post<Venda>(this.apiUrl, venda);
   }
 
+  // =============================
+  // ATUALIZAR VENDA (PUT)
+  // =============================
+  atualizarVenda(id: number, venda: Venda): Observable<Venda> {
+    return this.http.put<Venda>(`${this.apiUrl}/${id}`, venda);
+  }
+
+  // =============================
   // DELETAR VENDA
+  // =============================
   deletarVenda(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  // RESUMO DE VENDAS
+  // =============================
+  // RESUMO DAS VENDAS
+  // =============================
   getResumo(): Observable<ResumoVendasDTO> {
     return this.http.get<ResumoVendasDTO>(`${this.apiUrl}/resumo`);
   }
