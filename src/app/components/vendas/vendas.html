@@ -224,7 +224,7 @@
           @for (venda of vendasPaginadas; track venda.id) {
           <tr>
 
-            <td class="py-3 px-4 fw-bold text-dark">
+            <td class="py-2 px-2 fw-bold text-dark">
               <span class="badge border px-3 py-2" [ngClass]="{
                 'bg-red-light text-red border-red': venda.categoria === 'Carnes',
                 'bg-yellow-light text-yellow border-yellow': venda.categoria === 'Bebidas',
@@ -236,14 +236,14 @@
               </span>
             </td>
 
-            <td class="py-3 px-4 fw-semibold text-dark">
+            <td class="py-2 px-2 fw-semibold text-dark">
               {{ venda.produto }}
               <div class="small text-muted mt-1">{{ venda.marca }}</div>
             </td>
 
             <td class="fw-semibold">{{ venda.formaPagamento }}</td>
             <td>{{ formatarMoeda(venda.precoVenda) }}</td>
-            <td class="py-3 px-4">
+            <td class="py-2 px-2">
                 <span class="badge rounded-pill px-3 py-2"
                   [ngClass]="{
                     'bg-danger-subtle text-danger': venda.quantidadeVendida < 5,
@@ -255,10 +255,10 @@
                 </span>
               </td>
             <td>{{ formatarMoeda(venda.lucro ?? 0) }}</td>
-            <td class="py-3 px-4 text-muted">{{ venda.dataVenda | date:'dd/MM/yyyy' }}</td>
+            <td class="py-2 px-2 text-muted">{{ venda.dataVenda | date:'dd/MM/yyyy' }}</td>
 
             <!-- AÇÕES -->
-            <td class="text-center py-3">
+            <td class="text-center py-2">
 
               <!-- Botão Editar -->
               <button class="btn btn-sm btn-outline-warning rounded-circle me-2" (click)="editarVenda(venda)"

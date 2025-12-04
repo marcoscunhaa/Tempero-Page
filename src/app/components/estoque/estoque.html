@@ -178,12 +178,12 @@
 
           <thead class="bg-primary text-white shadow-sm">
             <tr class="fw-semibold small">
-              <th class="py-3 px-4">Categoria</th>
-              <th class="py-3 px-4">Descrição do Produto</th>
-              <th class="py-3 px-4">Valor de Aquisição (R$)</th>
-              <th class="py-3 px-4">Valor de Venda (R$)</th>
-              <th class="py-3 px-4">Estoque</th>
-              <th class="py-3 px-4">Data de Vencimento</th>
+              <th class="py-2 px-2">Categoria</th>
+              <th class="py-2 px-2">Descrição do Produto</th>
+              <th class="py-2 px-2">Valor de Aquisição (R$)</th>
+              <th class="py-2 px-2">Valor de Venda (R$)</th>
+              <th class="py-2 px-2">Estoque</th>
+              <th class="py-2 px-2">Data de Vencimento</th>
             </tr>
           </thead>
 
@@ -198,7 +198,7 @@
             >
 
               <td class="py-3 px-4 fw-bold text-dark">
-                <span class="badge border px-3 py-2"
+                <span class="badge border px-2 py-2"
                   [ngClass]="{
                       'bg-red-light text-red border-red': prod.categoria === 'Carnes',
                       'bg-yellow-light text-yellow border-yellow': prod.categoria === 'Bebidas',
@@ -211,20 +211,20 @@
                 </span>
               </td>
 
-              <td class="py-3 px-4 fw-semibold text-dark">
+              <td class="py-2 px-2 fw-semibold text-dark">
                 {{ prod.detalhe }}
                 <div class="small text-muted mt-1">{{ prod.marca }}</div>
               </td>
 
-              <td class="py-3 px-4 fw-semibold text-danger">
+              <td class="py-2 px-2 fw-semibold text-danger">
                 R$ {{ prod.precoCompra | number:'1.2-2' }}
               </td>
 
-              <td class="py-3 px-4 fw-semibold text-success">
+              <td class="py-2 px-2 fw-semibold text-success">
                 R$ {{ prod.precoVenda | number:'1.2-2' }}
               </td>
 
-              <td class="py-3 px-4">
+              <td class="py-2 px-2">
                 <span class="badge rounded-pill px-3 py-2"
                   [ngClass]="{
                     'bg-danger-subtle text-danger': prod.quantidadeEstoque < 5,
@@ -236,7 +236,7 @@
                 </span>
               </td>
 
-              <td class="py-3 px-4 text-muted">
+              <td class="py-2 px-2 text-muted">
                 {{ prod.vencimento | date:'dd/MM/yyyy' }}
               </td>
             </tr>

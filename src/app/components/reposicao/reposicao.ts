@@ -175,14 +175,25 @@ export class ReposicaoComponent implements OnInit {
     return index;
   }
 
+  // NOVA REPOSIÇÃO COM PREÇOS AUTOMÁTICOS
   novaReposicao() {
     this.reposicaoSelecionada = this.criarObjetoReposicao();
     this.produtoFiltro = '';
     this.produtosFiltrados = [...this.produtos];
 
-    // Se houver produtos, seleciona o primeiro por padrão
     if (this.produtosFiltrados.length > 0) {
-      this.reposicaoSelecionada.produto = this.produtosFiltrados[0];
+      const produtoPadrao = this.produtosFiltrados[0];
+      this.reposicaoSelecionada.produto = produtoPadrao;
+      this.reposicaoSelecionada.precoCompra = produtoPadrao.precoCompra;
+      this.reposicaoSelecionada.precoVenda = produtoPadrao.precoVenda;
+    }
+  }
+
+  // Atualiza preços ao trocar produto no select
+  atualizarPrecosProduto() {
+    if (this.reposicaoSelecionada.produto) {
+      this.reposicaoSelecionada.precoCompra = this.reposicaoSelecionada.produto.precoCompra;
+      this.reposicaoSelecionada.precoVenda = this.reposicaoSelecionada.produto.precoVenda;
     }
   }
 
@@ -195,7 +206,6 @@ export class ReposicaoComponent implements OnInit {
       produto: produtoSelecionado,
     };
 
-    // Converter datas para yyyy-MM-dd
     if (this.reposicaoSelecionada.dataEntrada.includes('/')) {
       const [d, m, a] = this.reposicaoSelecionada.dataEntrada.split('/');
       this.reposicaoSelecionada.dataEntrada = `${a}-${m}-${d}`;
