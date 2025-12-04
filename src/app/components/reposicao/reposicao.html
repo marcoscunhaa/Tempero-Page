@@ -148,10 +148,10 @@
               <th class="py-2 px-2">Categoria</th>
               <th class="py-2 px-2">Produto</th>
               <th class="py-2 px-2">Quantidade</th>
-              <th class="py-2 px-2">Preço Compra</th>
-              <th class="py-2 px-2">Preço Venda</th>
-              <th class="py-2 px-2">Data de Chegada</th>
-              <th class="py-2 px-2">Data de Vencimento</th>
+              <th class="py-2 px-2">Aquisição(R$)</th>
+              <th class="py-2 px-2">Venda(R$)</th>
+              <th class="py-2 px-2">Chegada do Lote</th>
+              <th class="py-2 px-2">Vencimento do Lote</th>
               <th class="py-2 px-2 text-center">Ações</th>
             </tr>
           </thead>
@@ -171,12 +171,12 @@
                 </span>
               </td>
 
-              <td class="py-2 px-4 fw-semibold text-dark">
+              <td class="py-2 px-2 fw-semibold text-dark">
                 {{ rep.produto.detalhe }}
                 <div class="small text-muted mt-1">{{ rep.produto.marca }}</div>
               </td>
 
-              <td class="py-2 px-4">
+              <td class="py-2 px-2">
                 <span class="badge rounded-pill px-3 py-2" [ngClass]="{
                     'bg-danger-subtle text-danger': rep.quantidade < 5,
                     'bg-warning-subtle text-warning': rep.quantidade >= 5 && rep.quantidade <= 10,
@@ -186,13 +186,13 @@
                 </span>
               </td>
 
-              <td class="py-2 px-4 text-muted">{{ rep.produto.precoCompra | currency:'BRL' }}</td>
-              <td class="py-2 px-4 text-muted">{{ rep.produto.precoVenda | currency:'BRL' }}</td>
-              <td class="py-2 px-4 text-muted">{{ rep.dataEntrada | date:'dd/MM/yyyy' }}</td>
-              <td class="py-2 px-4 text-muted">{{ rep.vencimento | date:'dd/MM/yyyy' }}</td>
+              <td class="py-2 px-2 text-danger">{{ rep.produto.precoCompra | currency:'BRL' }}</td>
+              <td class="py-2 px-2 text-success">{{ rep.produto.precoVenda | currency:'BRL' }}</td>
+              <td class="py-2 px-2 text-muted">{{ rep.dataEntrada | date:'dd/MM/yyyy' }}</td>
+              <td class="py-2 px-2 text-muted">{{ rep.vencimento | date:'dd/MM/yyyy' }}</td>
 
 
-              <td class="py-2 px-4 text-center">
+              <td class="py-2 px-2 text-center">
                 <button class="btn btn-sm btn-outline-warning rounded-circle me-2" (click)="editarReposicao(rep)"
                   data-bs-toggle="modal" data-bs-target="#modalEditarReposicao">
                   <i class="bi bi-pencil-square"></i>
