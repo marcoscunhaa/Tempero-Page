@@ -72,6 +72,8 @@ export class ReposicaoComponent implements OnInit {
     this.notificacaoService.notificacao$.subscribe((notif: Notificacao) => {
       this.tipoAlerta = notif.tipo;
       this.alertaMensagem = notif.mensagem;
+      this.carregarProdutos();
+      this.carregarReposicoes();
     });
 
     this.anos = Array.from({ length: 11 }, (_, i) => 2025 + i);
@@ -96,6 +98,8 @@ export class ReposicaoComponent implements OnInit {
       quantidade: 1,
       dataEntrada: '',
       vencimento: '',
+      precoCompra: 0,
+      precoVenda: 0,
     };
   }
 
@@ -163,6 +167,10 @@ export class ReposicaoComponent implements OnInit {
     }
   }
 
+  trackById(index: number, item: Reposicao) {
+    return item.id;
+  }
+
   trackByIndex(index: number) {
     return index;
   }
@@ -179,17 +187,15 @@ export class ReposicaoComponent implements OnInit {
   }
 
   editarReposicao(rep: Reposicao) {
-    // Encontrar o objeto produto correspondente na lista de produtos
     const produtoSelecionado =
       this.produtos.find((p) => p.id === rep.produto.id) || this.criarObjetoReposicao().produto;
 
-    // Definir reposicaoSelecionada
     this.reposicaoSelecionada = {
       ...rep,
       produto: produtoSelecionado,
     };
 
-    // Converter datas para formato yyyy-MM-dd (input type="date")
+    // Converter datas para yyyy-MM-dd
     if (this.reposicaoSelecionada.dataEntrada.includes('/')) {
       const [d, m, a] = this.reposicaoSelecionada.dataEntrada.split('/');
       this.reposicaoSelecionada.dataEntrada = `${a}-${m}-${d}`;
@@ -200,7 +206,6 @@ export class ReposicaoComponent implements OnInit {
       this.reposicaoSelecionada.vencimento = `${a}-${m}-${d}`;
     }
 
-    // Filtrar produtos para o select (mesmo que não vá mudar, para manter consistência)
     this.produtoFiltro = '';
     this.produtosFiltrados = [...this.produtos];
   }
@@ -240,13 +245,17 @@ export class ReposicaoComponent implements OnInit {
       });
   }
 
+  selecionarParaExcluir(rep: Reposicao) {
+    this.reposicaoSelecionada = rep;
+  }
+
   confirmarExcluirReposicao() {
     if (!this.reposicaoSelecionada?.id) return;
 
     this.reposicaoService.deletar(this.reposicaoSelecionada.id).subscribe({
       next: () => {
         this.reposicoes = this.reposicoes.filter((r) => r.id !== this.reposicaoSelecionada.id);
-        this.notificacaoService.emitirSucesso('Reposição removida!');
+        this.notificacaoService.emitirSucesso('Reposição removida com sucesso!');
         this.filtrar();
       },
       error: () => this.notificacaoService.emitirErro('Erro ao excluir reposição.'),

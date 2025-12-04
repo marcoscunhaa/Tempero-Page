@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef } from '@angular/core';
 import { ProdutoService, Produto } from '../../services/produto';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NotificacaoService, TipoAlerta, Notificacao } from '../../services/notificacao';
 import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs/operators';
+import { finalize, map } from 'rxjs/operators';
+import { HttpResponse } from '@angular/common/http';
 
 @Component({
   standalone: true,
@@ -23,7 +24,8 @@ export class ModalInserir implements OnInit {
   constructor(
     private fb: FormBuilder,
     private produtoService: ProdutoService,
-    private notificacaoService: NotificacaoService
+    private notificacaoService: NotificacaoService,
+    private el: ElementRef // para fechar o modal manualmente
   ) {
     this.produtoForm = this.fb.group({
       categoria: ['', Validators.required],
@@ -37,16 +39,25 @@ export class ModalInserir implements OnInit {
   }
 
   ngOnInit() {
+    // Subscrição das notificações
     this.notificacaoService.notificacao$.subscribe((notif: Notificacao) => {
       this.alertaMensagem = notif.mensagem;
       this.tipoAlerta = notif.tipo;
     });
 
-    // Carrega produtos existentes para validação
-    this.produtoService.listarTodos().subscribe({
-      next: (prods) => this.produtosExistentes = prods,
-      error: () => this.produtosExistentes = []
-    });
+    // Carrega produtos existentes
+    this.carregarProdutos();
+  }
+
+  carregarProdutos() {
+    this.produtoService.listarTodos()
+      .pipe(
+        map((prods: Produto[] | null) => prods ?? []) // garante sempre array
+      )
+      .subscribe({
+        next: (prods) => this.produtosExistentes = prods,
+        error: () => this.produtosExistentes = [],
+      });
   }
 
   adicionarProduto() {
@@ -57,9 +68,9 @@ export class ModalInserir implements OnInit {
 
     const novoProduto: Produto = this.produtoForm.value;
 
-    // Validação no frontend: verifica se já existe detalhe igual
-    const existeDetalhe = this.produtosExistentes.some(
-      p => p.detalhe.trim().toLowerCase() === novoProduto.detalhe.trim().toLowerCase()
+    // Validação frontend
+    const existeDetalhe = (this.produtosExistentes ?? []).some(
+      p => (p.detalhe ?? '').trim().toLowerCase() === (novoProduto.detalhe ?? '').trim().toLowerCase()
     );
 
     if (existeDetalhe) {
@@ -70,12 +81,12 @@ export class ModalInserir implements OnInit {
     this.loading = true;
 
     this.produtoService.salvar(novoProduto)
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: () => {
+        next: (produtoSalvo) => {
           this.produtoForm.reset();
           this.notificacaoService.emitirSucesso('Produto salvo com sucesso!');
-          this.produtoService.listarTodos().subscribe(prods => this.produtosExistentes = prods);
+          this.carregarProdutos();
         },
         error: () => {
           this.notificacaoService.emitirErro('Erro ao salvar o produto.');

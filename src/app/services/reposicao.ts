@@ -10,6 +10,8 @@ export interface Reposicao {
   quantidade: number;
   dataEntrada: string;
   vencimento: string;
+  precoCompra: number;
+  precoVenda: number;
 }
 
 @Injectable({
